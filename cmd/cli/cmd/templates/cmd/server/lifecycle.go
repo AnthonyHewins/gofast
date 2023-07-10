@@ -4,10 +4,10 @@ import (
 	"context"
 	"os"
 
-	"github.com/AnthonyHewins/gofast/internal/cmdline"
 	"github.com/namsral/flag"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
+	"{{ .Module }}/internal/cmdline"
 )
 
 func bootstrap(ctx context.Context) {

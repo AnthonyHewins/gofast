@@ -5,7 +5,7 @@
 test := CONFIG_ENV=test go test ./...
 
 VERSION ?= v0.0.0
-build_flag_path := github.com/AnthonyHewins/gofast/cmd
+build_flag_path := {{ .Module }}
 BUILD_FLAGS := 
 ifneq (,$(wildcard ./vendor))
 	$(info Found vendor directory; setting "-mod vendor" to any "go build" commands)
@@ -13,7 +13,7 @@ ifneq (,$(wildcard ./vendor))
 endif
 
 cli:
-	go build $(BUILD_FLAGS) -ldflags="-X '$(build_flag_path)/cli/cmd.version=$(VERSION)'" -o bin/gofast cmd/$@/*.go
+	go build $(BUILD_FLAGS) -ldflags="-X '$(build_flag_path)/cli/cmd.version=$(VERSION)'" -o bin/{{ .AppName }} cmd/$@/*.go
 
 test: ## Run go vet, then test all files
 	go vet ./...

@@ -9,7 +9,6 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/AnthonyHewins/gofast/cmd/server/grpcserver"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -18,6 +17,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	"{{ .Module }}/cmd/server/grpcserver"
 )
 
 var (
