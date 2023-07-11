@@ -1,129 +1,140 @@
 package cmdline
 
 import (
-	"bytes"
+	"embed"
 	"fmt"
-	"html/template"
+	"io"
+	"io/fs"
 	"os"
-	"os/exec"
-	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+)
+
+//go:embed templates/*
+var f embed.FS
+
+var (
+	infoColor     = color.New(color.FgCyan)
+	infoBoldColor = color.New(color.FgWhite, color.BgCyan, color.Bold)
+
+	errColor      = color.New(color.FgWhite, color.Bold, color.BgRed)
+	dirColor      = color.New(color.FgWhite, color.Bold, color.BgMagenta)
+	templateColor = color.New(color.FgWhite, color.Bold, color.BgHiBlue)
+	commandColor  = color.New(color.FgWhite, color.Bold, color.BgYellow)
 )
 
 type App struct {
+	logExporter     io.Writer
+	errExporter     io.Writer
+	permissionLevel fs.FileMode
+
+	BufID     string
 	AppName   string
 	Module    string
 	GoVersion string
 }
 
-func NewAppFromCobra(module string, cmd *cobra.Command) (*App, error) {
+func NewAppFromCobra(module string, cmd *pflag.FlagSet) (*App, error) {
 	domainParts := strings.Split(module, "/")
-	if len(domainParts) < 2 {
+	n := len(domainParts)
+	if len(domainParts) < 3 {
 		return nil, fmt.Errorf("invalid module, not a valid domain: %v", module)
 	}
 
-	version := runtime.Version()[2:]
+	a := &App{
+		logExporter:     os.Stdout,
+		errExporter:     os.Stderr,
+		permissionLevel: 0755,
+		AppName:         domainParts[n-1],
+		BufID:           strings.Join(domainParts[n-2:], "/"),
+		Module:          module,
+		GoVersion:       "",
+	}
 
-	return &App{
-		AppName:   domainParts[len(domainParts)-1],
-		Module:    module,
-		GoVersion: "",
-	}, nil
+	semanticVersionPieces := strings.Split(runtime.Version()[2:], ".")
+	switch len(semanticVersionPieces) {
+	case 2, 3:
+		a.GoVersion = strings.Join(semanticVersionPieces[0:2], ".")
+	default:
+		a.info("unable to determine how to label your go version with this string: %s (got it from calling runtime.Version()). Expected semver: goXX.XX.XX", semanticVersionPieces)
+		a.info("going to default to 1.20")
+		a.GoVersion = "1.20"
+	}
+
+	return a, nil
 }
 
-func (s *App) run(cmd string, args ...string) []byte {
-	fmt.Fprintf(
-		s.logWriter,
-		commandColor.Sprint("  CMD   ")+fmt.Sprintf(" %s %s\n", cmd, strings.Join(args, " ")),
-	)
+func (a *App) CreateNewApp() {
+	err := fs.WalkDir(f, ".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			a.fatal(err.Error())
+		}
 
-	command := exec.Command(cmd, args...)
-	command.Dir = "./" + s.Name
-	buf, err := command.Output()
+		if path == "templates" {
+			return nil
+		}
+
+		targetPath := filepath.Join(
+			a.AppName,
+			strings.TrimSuffix(
+				strings.TrimPrefix(path, "templates/"),
+				".tmpl",
+			),
+		)
+
+		if d.IsDir() {
+			a.dir(targetPath)
+			return nil
+		}
+
+		dir, _ := filepath.Split(targetPath)
+		a.dir(dir)
+		a.template(path, targetPath)
+		return nil
+	})
+
 	if err != nil {
-		s.fatal("failed running command: %v", err)
+		a.fatal(err.Error())
 	}
 
-	return buf
-}
+	a.run("git", "init")
+	a.run("go", "get", "./...")
+	fmt.Fprintln(a.logExporter)
 
-// denotes a group of steps in the server creation process
-func (s *App) info(str string, args ...any) {
-	fmt.Fprintf(
-		s.logWriter,
-		infoColor.Sprint("  INFO  ")+" "+fmt.Sprintf(str, args...)+"\n",
-	)
-}
-
-func (s *App) fatal(str string, args ...any) {
-	fmt.Fprintf(
-		s.logWriter,
-		errColor.Sprint("  FATAL ")+" "+fmt.Sprintf(str, args...)+"\n",
-	)
-
-	os.Exit(1)
-}
-
-func (s *App) dir(dir string) {
-	dir = path.Join(s.Name, dir)
-
-	fmt.Fprintf(
-		s.logWriter,
-		"\t"+dirColor.Sprint("  DIR   ")+" "+color.MagentaString(dir)+"\n",
-	)
-
-	err := os.MkdirAll(dir, 0777)
-	if err != nil {
-		s.fatal(err.Error())
-	}
-}
-
-func (s *App) template(tmplFileWithoutExtension string) {
-	outDir, base := path.Dir(tmplFileWithoutExtension), path.Base(tmplFileWithoutExtension)
-
-	if outDir != "." {
-		s.dir(outDir)
+	tab := func(s string) {
+		a.info("\t" + s)
 	}
 
-	fmt.Fprintf(
-		s.logWriter,
-		"\t"+templateColor.Sprint("TEMPLATE")+" "+color.HiBlueString(tmplFileWithoutExtension)+"\n",
-	)
+	a.infoBold("Your app is built at ./%s", a.AppName)
+	a.info("Start off by removing what you don't need, if anything:")
+	tab("If you don't need a CLI, rm -r cmd/cli")
+	tab("If you don't need a server, rm -r cmd/server")
+	tab("If you don't need a REST server, delete the serveGRPCGateway function, then the compiler will tell you what other things to delete")
+	a.info("Then make sure to do 'go mod tidy' to clean up the dependencies when done to thin the build out")
+	fmt.Fprintln(a.logExporter)
 
-	tmplFile := path.Join("templates", outDir, base+".tmpl")
-	buf, err := f.ReadFile(tmplFile)
-	if err != nil {
-		s.fatal("missing template file %s: %v", tmplFile, err)
-	}
+	a.info("Using this application template")
+	fmt.Fprintln(a.logExporter)
 
-	tmpl, err := template.New(tmplFile).Parse(string(buf))
-	if err != nil {
-		s.fatal("template for %s is invalid: %v", tmplFile, err)
-	}
+	a.infoBold("General usage")
+	tab("You can get logging, tracing, metrics, and database connections using the cmdline package in your app, using App.<Dependency>()")
+	tab("Add to this struct to suit your app's needs for bootstrapping dependencies, such as extra DB connections.")
+	tab("Use App's methods to pass them into your application code. This is where the bulk of what you'll need to start creating")
+	tab("a server/CLI will exist and you can bring it into your code with all the boilerplate essentially done already")
+	fmt.Fprintln(a.logExporter)
 
-	intermediateBuffer := bytes.NewBuffer([]byte{})
+	a.infoBold("Server (note that by default there is something you NEED to do before it can compile):")
+	tab("Start by defining your gRPC interface(s) in api/proto/<serviceName>/v1/<service>.proto, using the provided example")
+	tab("Use buf generate to generate your server")
+	tab("Go to cmd/server/grpcserver and call <generated packagename>.Register<SvcName>Server(grpcServer, s) to bind the gRPC server")
+	tab("If you're using gRPC gateway for a REST server as well, then you'll need to also register that inside the svcHandler slice in the serveGRPCGateway function")
+	fmt.Fprintln(a.logExporter)
 
-	err = tmpl.Execute(intermediateBuffer, s)
-	if err != nil {
-		s.fatal("failed executing template: %v", err)
-	}
-
-	if intermediateBuffer.Len() == 0 {
-		s.info("you passed some args that resulted in this file having no output; skipping")
-	}
-
-	outPath := fmt.Sprintf("%s/%s", s.Name, tmplFileWithoutExtension)
-	file, err := os.Create(outPath)
-	if err != nil {
-		s.fatal("failed creating the output file %s: %v", outPath, err)
-	}
-
-	_, err = fmt.Fprint(file, intermediateBuffer.Bytes())
-	if err != nil {
-		s.fatal("failed writing: %v", err)
-	}
+	a.infoBold("CLI")
+	tab("For CLIs, the job is much easier, just make sure you have cobra-cli installed and begin using it.")
+	tab("You have logging, tracing, and versioning already set up as persistent flags in the root module you can leverage with the App struct")
 }

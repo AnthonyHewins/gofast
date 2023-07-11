@@ -4,9 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"embed"
 	"fmt"
-	"io/fs"
 	"os"
 
 	"github.com/AnthonyHewins/gofast/internal/cmdline"
@@ -17,9 +15,6 @@ import (
 var (
 	version string
 )
-
-//go:embed templates/*
-var f embed.FS
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -41,29 +36,17 @@ Features:
 
 		switch len(args) {
 		case 1:
-			app, err := cmdline.NewAppFromCobra("", cmd.Flags())
+			app, err := cmdline.NewAppFromCobra(args[0], cmd.Flags())
 			if err != nil {
 				return err
 			}
 
-			svc{
-				logWriter: app.Logger(),
-				Name:      "",
-				GRPC:      false,
-				Proto:     false,
-				GoVersion: version,
-			}
-
-			fs.WalkDir(f, ".", func(path string, d fs.DirEntry, err error) error {
-				if err != nil {
-					return err
-				}
-				fmt.Printf("path=%q, isDir=%v\n", path, d.IsDir())
-				return nil
-			})
+			app.CreateNewApp()
 		default:
 			return fmt.Errorf("wrong number of args")
 		}
+
+		return nil
 	},
 }
 
@@ -77,18 +60,6 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cli.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 	f := rootCmd.Flags()
 	f.BoolP("version", "v", false, "Print version")
-
-	pf := rootCmd.PersistentFlags()
-
-	pf.StringP("log-exporter", "", "If blank, log to stdout, else log to this file")
 }
