@@ -22,12 +22,12 @@ func bootstrap(ctx context.Context) {
 	logger = app.Logger()
 
 	// database
-	dbReader, err = app.ConnectDBWithOTEL(*dbHost, *dbName, *dbReaderUser, *dbReaderPassword, uint16(*dbPort))
+	dbReader, err = app.ConnectDB(*dbHost, *dbName, *dbReaderUser, *dbReaderPassword, uint16(*dbPort))
 	if err != nil {
 		panic(err)
 	}
 
-	dbWriter, err = app.ConnectDBWithOTEL(*dbHost, *dbName, *dbWriterUser, *dbWriterPassword, uint16(*dbPort))
+	dbWriter, err = app.ConnectDB(*dbHost, *dbName, *dbWriterUser, *dbWriterPassword, uint16(*dbPort))
 	if err != nil {
 		panic(err)
 	}

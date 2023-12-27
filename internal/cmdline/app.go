@@ -61,8 +61,8 @@ func NewAppFromCobra(module string, cmd *pflag.FlagSet) (*App, error) {
 		a.GoVersion = strings.Join(semanticVersionPieces[0:2], ".")
 	default:
 		a.info("unable to determine how to label your go version with this string: %s (got it from calling runtime.Version()). Expected semver: goXX.XX.XX", semanticVersionPieces)
-		a.info("going to default to 1.20")
-		a.GoVersion = "1.20"
+		a.info("going to default to 1.24")
+		a.GoVersion = "1.24"
 	}
 
 	return a, nil

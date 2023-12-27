@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5"
 	_ "github.com/lib/pq"
 	"github.com/namsral/flag"
 	"go.opentelemetry.io/otel/sdk/trace"
@@ -70,8 +70,8 @@ var (
 	tp     *trace.TracerProvider
 
 	// database
-	dbReader *sqlx.DB
-	dbWriter *sqlx.DB
+	dbReader *pgx.Conn
+	dbWriter *pgx.Conn
 
 	// servers
 	httpServer        *http.Server

@@ -15,6 +15,9 @@ endif
 cli:
 	go build $(BUILD_FLAGS) -ldflags="-X '$(build_flag_path)/cli/cmd.version=$(VERSION)'" -o bin/{{ .AppName }} cmd/$@/*.go
 
+sql: ## Generate SQL
+	(cd sql; sqlc generate)
+
 test: ## Run go vet, then test all files
 	go vet ./...
 	$(test)
