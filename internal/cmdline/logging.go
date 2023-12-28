@@ -3,6 +3,18 @@ package cmdline
 import (
 	"fmt"
 	"os"
+
+	"github.com/fatih/color"
+)
+
+var (
+	infoColor     = color.New(color.FgCyan)
+	infoBoldColor = color.New(color.FgWhite, color.BgCyan, color.Bold)
+
+	errColor      = color.New(color.FgWhite, color.Bold, color.BgRed)
+	dirColor      = color.New(color.FgWhite, color.Bold, color.BgMagenta)
+	templateColor = color.New(color.FgWhite, color.Bold, color.BgHiBlue)
+	commandColor  = color.New(color.FgWhite, color.Bold, color.BgYellow)
 )
 
 // denotes a group of steps in the server creation process

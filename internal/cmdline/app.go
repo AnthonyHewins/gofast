@@ -10,22 +10,11 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/spf13/pflag"
 )
 
 //go:embed templates/*
 var f embed.FS
-
-var (
-	infoColor     = color.New(color.FgCyan)
-	infoBoldColor = color.New(color.FgWhite, color.BgCyan, color.Bold)
-
-	errColor      = color.New(color.FgWhite, color.Bold, color.BgRed)
-	dirColor      = color.New(color.FgWhite, color.Bold, color.BgMagenta)
-	templateColor = color.New(color.FgWhite, color.Bold, color.BgHiBlue)
-	commandColor  = color.New(color.FgWhite, color.Bold, color.BgYellow)
-)
 
 type App struct {
 	logExporter     io.Writer

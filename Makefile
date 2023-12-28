@@ -15,6 +15,9 @@ endif
 cli:
 	go build $(BUILD_FLAGS) -ldflags="-X '$(build_flag_path)/cli/cmd.version=$(VERSION)'" -o bin/gofast cmd/$@/*.go
 
+deploy: cli ## Deploy to ~/.local/bin
+	cp ./bin/gofast ~/.local/bin
+
 test: ## Run go vet, then test all files
 	go vet ./...
 	$(test)
