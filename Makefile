@@ -4,7 +4,7 @@
 # command aliases
 test := CONFIG_ENV=test go test ./...
 
-VERSION ?= v0.0.0
+VERSION ?= v0.0.3
 build_flag_path := github.com/AnthonyHewins/gofast/cmd
 BUILD_FLAGS := 
 ifneq (,$(wildcard ./vendor))
