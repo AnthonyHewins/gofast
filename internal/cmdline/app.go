@@ -67,14 +67,7 @@ func (a *App) CreateNewApp() {
 			return nil
 		}
 
-		targetPath := filepath.Join(
-			a.AppName,
-			strings.TrimSuffix(
-				strings.TrimPrefix(path, "templates/"),
-				".tmpl",
-			),
-		)
-
+		targetPath := filepath.Join(a.AppName, strings.TrimPrefix(path, "templates/"))
 		if d.IsDir() {
 			a.dir(targetPath)
 			return nil

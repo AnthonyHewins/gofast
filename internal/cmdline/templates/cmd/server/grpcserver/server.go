@@ -3,7 +3,7 @@ package grpcserver
 import (
 	"time"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
@@ -35,12 +35,12 @@ type server struct {
 	logger *slog.Logger
 	tracer trace.Tracer
 
-	reader *sqlx.DB
-	writer *sqlx.DB
+	reader *pgx.Conn
+	writer *pgx.Conn
 }
 
 // NewServer creates a new server. Pass an empty string to traceName to not add any trace middleware
-func NewServer(traceName string, l *slog.Logger, reader, writer *sqlx.DB) *grpc.Server {
+func NewServer(traceName string, l *slog.Logger, reader, writer *pgx.Conn) *grpc.Server {
 	s := &server{
 		logger: l,
 		tracer: otel.Tracer(traceName),

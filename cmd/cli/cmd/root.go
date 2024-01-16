@@ -24,7 +24,7 @@ var rootCmd = &cobra.Command{
 Features:
 	- cobra CLI for CLIs
 	- slog for logging
-	- sqlx, OTEL for database
+	- pgx, sqlc, OTEL for database
 	- Prometheus metrics`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
