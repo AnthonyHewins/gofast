@@ -4,6 +4,8 @@
 # command aliases
 test := CONFIG_ENV=test go test ./...
 
+targets := cli server
+
 VERSION ?= v0.0.0
 build_flag_path := {{ .Module }}
 BUILD_FLAGS := 
@@ -12,7 +14,7 @@ ifneq (,$(wildcard ./vendor))
 	BUILD_FLAGS += -mod vendor
 endif
 
-cli:
+$(targets): ## Build this binary
 	go build $(BUILD_FLAGS) -ldflags="-X '$(build_flag_path)/cli/cmd.version=$(VERSION)'" -o bin/{{ .AppName }} cmd/$@/*.go
 
 sql: ## Generate SQL
@@ -21,9 +23,6 @@ sql: ## Generate SQL
 test: ## Run go vet, then test all files
 	go vet ./...
 	$(test)
-
-update-snapshots: ## Update snapshots during a go test. Must have cupaloy
-	UPDATE_SNAPSHOTS=true $(test)
 
 clean: ## gofmt, go generate, then go mod tidy, and finally rm -rf bin/
 	find . -iname *.go -type f -exec gofmt -w -s {} \;

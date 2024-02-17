@@ -1,4 +1,4 @@
-package cmdline
+package bootstrap
 
 import (
 	"github.com/spf13/cobra"

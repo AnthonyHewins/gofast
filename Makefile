@@ -12,7 +12,7 @@ ifneq (,$(wildcard ./vendor))
 	BUILD_FLAGS += -mod vendor
 endif
 
-cli:
+cli: ## Build the CLI
 	go build $(BUILD_FLAGS) -ldflags="-X '$(build_flag_path)/cli/cmd.version=$(VERSION)'" -o bin/gofast cmd/$@/*.go
 
 deploy: cli ## Deploy to ~/.local/bin
@@ -21,9 +21,6 @@ deploy: cli ## Deploy to ~/.local/bin
 test: ## Run go vet, then test all files
 	go vet ./...
 	$(test)
-
-update-snapshots: ## Update snapshots during a go test. Must have cupaloy
-	UPDATE_SNAPSHOTS=true $(test)
 
 clean: ## gofmt, go generate, then go mod tidy, and finally rm -rf bin/
 	find . -iname *.go -type f -exec gofmt -w -s {} \;
