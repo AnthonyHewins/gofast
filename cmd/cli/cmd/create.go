@@ -5,8 +5,9 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/AnthonyHewins/gofast/internal/create"
+	"github.com/AnthonyHewins/gofast/internal/commands/create"
 	"github.com/spf13/cobra"
 )
 
@@ -15,18 +16,32 @@ var createCmd = &cobra.Command{
 	Use:   "create VALID-GO-MODULE-PATH",
 	Short: "Create a new applcation",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		var moduleParts []string
 		switch len(args) {
 		case 1:
-			app, err := create.NewAppFromCobra(args[0], cmd.Flags())
-			if err != nil {
-				return err
-			}
-
-			app.CreateNewApp()
+			moduleParts = strings.Split(args[0], "/")
 		default:
 			return fmt.Errorf("wrong number of args")
 		}
 
+		n := len(moduleParts)
+		if len(moduleParts) < 3 {
+			return fmt.Errorf("invalid module, not a valid domain: %v", args[0])
+		}
+
+		a, err := newApp(cmd.Flags())
+		if err != nil {
+			return err
+		}
+
+		c := create.NewCreator(a.r, &create.CreateArgs{
+			AppName:   moduleParts[n-1],
+			BufID:     strings.Join(moduleParts[n-2:], "/"),
+			Module:    args[0],
+			GoVersion: a.r.GoVersion(),
+		})
+
+		c.CreateNewApp()
 		return nil
 	},
 }

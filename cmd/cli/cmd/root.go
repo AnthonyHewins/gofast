@@ -35,5 +35,6 @@ func Execute() {
 
 func init() {
 	f := rootCmd.Flags()
+
 	f.BoolP("version", "v", false, "Print version")
 }
