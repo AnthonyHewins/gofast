@@ -5,26 +5,10 @@ import (
 	"embed"
 	"fmt"
 	"os"
-	"os/exec"
-	"strings"
 	"text/template"
 
 	"github.com/fatih/color"
 )
-
-func (s *Runner) Run(command *exec.Cmd) {
-	fmt.Fprintf(
-		s.logExporter,
-		commandColor.Sprint("  CMD   ")+fmt.Sprintf(" %s %s\n", command.Path, strings.Join(command.Args, " ")),
-	)
-
-	buf, err := command.Output()
-	if err != nil {
-		s.Fatal("failed running command: %v. Your app should still be built, but gofast couldn't do all the work for you", err)
-	}
-
-	fmt.Fprint(s.logExporter, string(buf))
-}
 
 func (s *Runner) Dir(dir string) {
 	fmt.Fprintf(
