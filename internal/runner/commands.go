@@ -3,7 +3,6 @@ package runner
 import (
 	"fmt"
 	"os/exec"
-	"path/filepath"
 	"strings"
 )
 
@@ -12,8 +11,7 @@ func (s *Runner) Run(command *exec.Cmd) {
 		s.logExporter,
 		commandColor.Sprint("  CMD   ")+
 			fmt.Sprintf(
-				" %s %s\n",
-				filepath.Base(command.Path),
+				" %s \n",
 				strings.Join(command.Args, " "),
 			),
 	)

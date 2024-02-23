@@ -7,13 +7,12 @@ import (
 	"github.com/namsral/flag"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
-	"{{ .Module }}/internal/cmdline"
 )
 
 func bootstrap(ctx context.Context) {
 	flag.Parse()
 
-	app, err := cmdline.NewApp(appName, *logLevel, *logFmt, *logExporter, true)
+	app, err := bootstrap.NewApp(appName, *logLevel, *logFmt, *logExporter, true)
 	if err != nil {
 		panic(err)
 	}

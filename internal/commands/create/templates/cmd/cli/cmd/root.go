@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"{{ .Module }}/internal/cmdline"
+	"{{ .Module }}/internal/bootstrap"
 )
 
 // build vars
@@ -63,16 +63,16 @@ func init() {
 
 	pf := rootCmd.PersistentFlags()
 
-	pf.String(cmdline.LogLevel, "", "Log level to use. None for no logs, or debug, warn/warning, info, error/err")
-	pf.String(cmdline.LogExporter, "", "Log exporter to use. By default, it goes off log level: info/debug go to STDOUT, warn/error to STDERR. Specify 'stderr' to write to stderr, and anything else opens a file")
-	pf.String(cmdline.LogFmt, "", "Log format to use. Blank or 'json' will create a json logger, or you can use logfmt/text")
-	pf.Bool(cmdline.LogSource, false, "Make all logging show where the log occurred")
+	pf.String(bootstrap.LogLevel, "", "Log level to use. None for no logs, or debug, warn/warning, info, error/err")
+	pf.String(bootstrap.LogExporter, "", "Log exporter to use. By default, it goes off log level: info/debug go to STDOUT, warn/error to STDERR. Specify 'stderr' to write to stderr, and anything else opens a file")
+	pf.String(bootstrap.LogFmt, "", "Log format to use. Blank or 'json' will create a json logger, or you can use logfmt/text")
+	pf.Bool(bootstrap.LogSource, false, "Make all logging show where the log occurred")
 
-	pf.String(cmdline.Host, "localhost", "The database host to use")
-	pf.String(cmdline.Name, "", "The database name to use")
-	pf.String(cmdline.User, "", "The database user to use")
-	pf.String(cmdline.Password, "", "The database password to use")
-	pf.Uint16(cmdline.Port, 5432, "The database port to use")
+	pf.String(bootstrap.Host, "localhost", "The database host to use")
+	pf.String(bootstrap.Name, "", "The database name to use")
+	pf.String(bootstrap.User, "", "The database user to use")
+	pf.String(bootstrap.Password, "", "The database password to use")
+	pf.Uint16(bootstrap.Port, 5432, "The database port to use")
 
 	pf.String("trace-exporter", "", "Export data using this exporter. Options are stdout (can be configured to go to a file using trace-exporter-arg), otlp with gRPC, jaegar. Use 'none' or leave blank to skip tracing")
 	pf.String("trace-exporter-arg", "", "Export data using this URI. For otlp and jaegar this will point to the collector of tracing, for stdout this will point to a file rather than stdout")
